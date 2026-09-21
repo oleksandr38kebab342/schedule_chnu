@@ -1,0 +1,939 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Інформаційна система управління та відображення навчального розкладу</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --bg:#F7F5F0;
+    --surface:#FFFFFF;
+    --surface-2:#FBF9F4;
+    --border:#E4DFD2;
+    --text:#1C2033;
+    --text-soft:#5C6072;
+    --accent:#234573;
+    --accent-strong:#16324F;
+    --accent-soft:#E4ECF4;
+    --accent-2:#C08A3E;
+    --accent-2-soft:#F4E7D2;
+    --danger:#B5502F;
+    --danger-soft:#F6E2D6;
+    --success:#3E7C6B;
+    --success-soft:#DEEEE8;
+    --phase-init:#8A8F9C; --phase-init-soft:#EAEBEC;
+    --phase-found:#2F6FB0; --phase-found-soft:#E1EBF6;
+    --phase-cal:#2F9E8F; --phase-cal-soft:#DFF2EF;
+    --phase-sched:#5B4B9E; --phase-sched-soft:#E7E3F5;
+    --phase-conf:#C4622D; --phase-conf-soft:#F6E3D6;
+    --phase-perf:#3E8E5A; --phase-perf-soft:#E1F1E6;
+    --phase-excel:#A67C2E; --phase-excel-soft:#F1E6CD;
+    --phase-final:#B5302F; --phase-final-soft:#F6DEDC;
+    --font-display:'Playfair Display', Georgia, serif;
+    --font-body:'Manrope','Segoe UI',sans-serif;
+    --font-mono:'JetBrains Mono','Consolas',monospace;
+  }
+  html{scroll-behavior:smooth;}
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--font-body);background:var(--bg);color:var(--text);}
+  h1,h2,h3,h4{font-family:var(--font-display);margin:0;}
+  p{margin:0;}
+  ul{margin:0;padding:0;list-style:none;}
+  a{color:var(--accent);text-decoration:none;}
+  a:hover{color:var(--accent-2);}
+  img{max-width:100%;}
+  .sprint-row{transition:opacity .2s ease;}
+  .sprint-row.done{opacity:0.6;}
+  .sprint-row.done h3{text-decoration:line-through;}
+  .sprint-row.done .sprint-status{color:var(--success)!important;background:var(--success-soft)!important;border-color:var(--success)!important;}
+  .task.done .txt{text-decoration:line-through;opacity:0.65;}
+  .task-check{cursor:default;}
+</style>
+</head>
+<body>
+
+<div style="width:100%;min-height:100vh;background:var(--bg);">
+
+<header id="top" style="position:sticky;top:0;z-index:50;backdrop-filter:blur(8px);background:rgba(247,245,240,0.86);border-bottom:1px solid var(--border);">
+  <div style="max-width:1200px;margin:0 auto;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;">
+    <a href="#top" style="display:flex;align-items:center;gap:10px;color:var(--text);">
+      <span style="width:34px;height:34px;border-radius:9px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-display);font-weight:700;font-size:16px;">Р</span>
+      <span style="font-family:var(--font-display);font-weight:700;font-size:17px;">Система розкладу</span>
+    </a>
+    <nav style="display:flex;gap:22px;flex-wrap:wrap;">
+      <a href="#theme" style="font-size:13.5px;font-weight:600;color:var(--text-soft);">Тема</a>
+      <a href="#why" style="font-size:13.5px;font-weight:600;color:var(--text-soft);">Необхідність</a>
+      <a href="#architecture" style="font-size:13.5px;font-weight:600;color:var(--text-soft);">Архітектура</a>
+      <a href="#team" style="font-size:13.5px;font-weight:600;color:var(--text-soft);">Команда</a>
+      <a href="#roadmap" style="font-size:13.5px;font-weight:600;color:var(--text-soft);">Спринти</a>
+    </nav>
+    <span style="font-family:var(--font-mono);font-size:11.5px;color:var(--text-soft);background:var(--surface-2);border:1px solid var(--border);padding:6px 10px;border-radius:8px;">ТЗ v1.0</span>
+  </div>
+</header>
+
+<section id="hero" style="max-width:1200px;margin:0 auto;padding:64px 24px 40px;">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:48px;align-items:center;">
+    <div>
+      <span style="display:inline-block;font-family:var(--font-mono);font-size:11.5px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--accent);background:var(--accent-soft);padding:6px 12px;border-radius:999px;margin-bottom:20px;">Вебзастосунок · Технічне завдання</span>
+      <h1 style="font-size:clamp(28px,4.4vw,44px);line-height:1.14;font-weight:800;color:var(--text);margin-bottom:20px;">Інформаційна система управління та відображення навчального розкладу</h1>
+      <p style="font-size:17px;line-height:1.6;color:var(--text-soft);max-width:56ch;margin-bottom:28px;">Централізована платформа для формування, перевірки та перегляду розкладу занять університету — з урахуванням підгруп, потоків, парності тижнів, конфліктів і винятків, які завжди трапляються в реальному навчальному процесі.</p>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;">
+        <a href="#why" style="background:var(--accent);color:#fff;padding:13px 22px;border-radius:10px;font-weight:700;font-size:14px;">Навіщо цей проєкт</a>
+        <a href="#roadmap" style="background:var(--surface);color:var(--text);padding:13px 22px;border-radius:10px;font-weight:700;font-size:14px;border:1px solid var(--border);">План з 16 спринтів</a>
+      </div>
+      <div style="display:flex;gap:28px;flex-wrap:wrap;margin-top:40px;padding-top:26px;border-top:1px solid var(--border);">
+        <div><div style="font-family:var(--font-display);font-size:26px;font-weight:800;color:var(--accent);">113</div><div style="font-size:12px;color:var(--text-soft);">розділів ТЗ</div></div>
+        <div><div style="font-family:var(--font-display);font-size:26px;font-weight:800;color:var(--accent);">35</div><div style="font-size:12px;color:var(--text-soft);">таблиць БД</div></div>
+        <div><div style="font-family:var(--font-display);font-size:26px;font-weight:800;color:var(--accent);">7</div><div style="font-size:12px;color:var(--text-soft);">ролей доступу</div></div>
+        <div><div style="font-family:var(--font-display);font-size:26px;font-weight:800;color:var(--accent);">16</div><div style="font-size:12px;color:var(--text-soft);">спринтів до захисту</div></div>
+      </div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:20px;box-shadow:0 24px 50px -30px rgba(27,30,42,0.35);position:relative;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <span style="font-family:var(--font-mono);font-size:11.5px;color:var(--text-soft);">Тиждень 3 · непарний</span>
+        <span style="font-size:11.5px;font-weight:700;color:var(--success);background:var(--success-soft);padding:4px 9px;border-radius:999px;">121 група</span>
+      </div>
+      <div style="display:grid;grid-template-columns:38px repeat(5,1fr);gap:5px;">
+        <div></div>
+        <div style="text-align:center;font-size:11px;font-weight:700;color:var(--text-soft);padding:4px 0;">ПН</div>
+        <div style="text-align:center;font-size:11px;font-weight:700;color:var(--text-soft);padding:4px 0;">ВТ</div>
+        <div style="text-align:center;font-size:11px;font-weight:700;color:var(--text-soft);padding:4px 0;">СР</div>
+        <div style="text-align:center;font-size:11px;font-weight:700;color:var(--text-soft);padding:4px 0;">ЧТ</div>
+        <div style="text-align:center;font-size:11px;font-weight:700;color:var(--text-soft);padding:4px 0;">ПТ</div>
+
+        <div style="font-size:10.5px;color:var(--text-soft);display:flex;align-items:center;">1</div>
+        <div style="background:var(--accent-soft);color:var(--accent-strong);border-radius:7px;padding:6px 4px;font-size:9.5px;font-weight:700;text-align:center;line-height:1.25;">Мат.аналіз<br>А.203</div>
+        <div style="border-radius:7px;"></div>
+        <div style="background:var(--success-soft);color:var(--success);border-radius:7px;padding:6px 4px;font-size:9.5px;font-weight:700;text-align:center;line-height:1.25;">Фізика<br>Б.101</div>
+        <div style="border-radius:7px;"></div>
+        <div style="border-radius:7px;"></div>
+
+        <div style="font-size:10.5px;color:var(--text-soft);display:flex;align-items:center;">2</div>
+        <div style="border-radius:7px;"></div>
+        <div style="background:var(--accent-2-soft);color:var(--accent-2);border-radius:7px;padding:6px 4px;font-size:9.5px;font-weight:700;text-align:center;line-height:1.25;">Програм.<br>А.305</div>
+        <div style="border-radius:7px;"></div>
+        <div style="border-radius:7px;"></div>
+        <div style="background:var(--accent-soft);color:var(--accent-strong);border-radius:7px;padding:6px 4px;font-size:9.5px;font-weight:700;text-align:center;line-height:1.25;">Хімія<br>Б.204</div>
+
+        <div style="font-size:10.5px;color:var(--text-soft);display:flex;align-items:center;position:relative;">3</div>
+        <div style="background:var(--danger-soft);border:1.5px dashed var(--danger);color:var(--danger);border-radius:7px;padding:5px 4px;font-size:9px;font-weight:700;text-align:center;line-height:1.2;position:relative;">Матем.<br>А.203<div style="position:absolute;top:-9px;right:-9px;width:16px;height:16px;border-radius:50%;background:var(--danger);color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;">!</div></div>
+        <div style="border-radius:7px;"></div>
+        <div style="background:var(--success-soft);color:var(--success);border-radius:7px;padding:6px 4px;font-size:9.5px;font-weight:700;text-align:center;line-height:1.25;">Історія<br>А.110</div>
+        <div style="border-radius:7px;"></div>
+        <div style="border-radius:7px;"></div>
+
+        <div style="font-size:10.5px;color:var(--text-soft);display:flex;align-items:center;">4</div>
+        <div style="border-radius:7px;"></div>
+        <div style="border-radius:7px;"></div>
+        <div style="background:var(--accent-2-soft);color:var(--accent-2);border-radius:7px;padding:6px 4px;font-size:9.5px;font-weight:700;text-align:center;line-height:1.25;">Англ.мова<br>А.407</div>
+        <div style="border-radius:7px;"></div>
+        <div style="border-radius:7px;"></div>
+      </div>
+      <div style="margin-top:12px;padding-top:12px;border-top:1px dashed var(--border);font-size:11px;color:var(--danger);font-weight:600;">⚠ Конфлікт: аудиторія А.203 вже зайнята (Вишмат, гр. 124)</div>
+    </div>
+  </div>
+</section>
+
+<section id="theme" style="max-width:1200px;margin:0 auto;padding:64px 24px;">
+  <div style="max-width:70ch;margin-bottom:36px;">
+    <span style="font-family:var(--font-mono);font-size:11.5px;font-weight:600;color:var(--accent-2);text-transform:uppercase;letter-spacing:0.06em;">Тема проєкту</span>
+    <h2 style="font-size:clamp(24px,3vw,32px);font-weight:800;margin:12px 0 16px;">Розклад — це не просто таблиця</h2>
+    <p style="font-size:16px;line-height:1.65;color:var(--text-soft);">Табличне представлення — лише спосіб відображення. Насправді кожна пара є набором пов'язаних сутностей: дисципліна й тип заняття, конкретні групи, підгрупи та потоки, один або кілька викладачів, одна або кілька аудиторій, день, номер пари, семестр, модель тижнів і винятки. Система моделює навчальний процес таким, яким він є насправді — із сумісництвом викладачів, поділом груп на підгрупи з різними аудиторіями та спільними парами кількох потоків, що об'єднуються лише для конкретного заняття, без обов'язкового створення формального потоку.</p>
+  </div>
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:32px;">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:22px;flex-wrap:wrap;">
+      <div style="background:var(--accent);color:#fff;font-family:var(--font-display);font-weight:700;font-size:15px;padding:10px 20px;border-radius:10px;">Заняття</div>
+      <span style="color:var(--text-soft);font-size:14px;">складається з набору сутностей →</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;">
+      <div style="border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:13.5px;font-weight:600;text-align:center;background:var(--surface-2);">Дисципліна</div>
+      <div style="border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:13.5px;font-weight:600;text-align:center;background:var(--surface-2);">Тип заняття</div>
+      <div style="border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:13.5px;font-weight:600;text-align:center;background:var(--surface-2);">Групи</div>
+      <div style="border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:13.5px;font-weight:600;text-align:center;background:var(--surface-2);">Підгрупи</div>
+      <div style="border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:13.5px;font-weight:600;text-align:center;background:var(--surface-2);">Потоки</div>
+      <div style="border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:13.5px;font-weight:600;text-align:center;background:var(--surface-2);">Викладачі</div>
+      <div style="border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:13.5px;font-weight:600;text-align:center;background:var(--surface-2);">Аудиторії</div>
+      <div style="border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:13.5px;font-weight:600;text-align:center;background:var(--surface-2);">День</div>
+      <div style="border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:13.5px;font-weight:600;text-align:center;background:var(--surface-2);">Пара</div>
+      <div style="border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:13.5px;font-weight:600;text-align:center;background:var(--surface-2);">Семестр</div>
+      <div style="border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:13.5px;font-weight:600;text-align:center;background:var(--surface-2);">Модель тижнів</div>
+      <div style="border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:13.5px;font-weight:600;text-align:center;background:var(--surface-2);">Винятки</div>
+    </div>
+  </div>
+</section>
+
+<section id="why" style="background:var(--surface-2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div style="max-width:1200px;margin:0 auto;padding:64px 24px;">
+    <div style="max-width:70ch;margin-bottom:36px;">
+      <span style="font-family:var(--font-mono);font-size:11.5px;font-weight:600;color:var(--accent-2);text-transform:uppercase;letter-spacing:0.06em;">Необхідність проєкту</span>
+      <h2 style="font-size:clamp(24px,3vw,32px);font-weight:800;margin:12px 0 16px;">Навіщо централізована система</h2>
+      <p style="font-size:16px;line-height:1.65;color:var(--text-soft);">У більшості університетів розклад досі живе в розрізнених Excel- та Word-файлах: конфлікти виявляються постфактум, заміни губляться між версіями, а нестандартні аудиторії й нетипові формати часу «зникають» під час копіювання. Система повинна коректно працювати не лише з «ідеальним» розкладом, а й з реальними даними, де одночасно зустрічаються помилки в кафедрах, різні прив'язки викладачів, накладки та свідомо дозволені конфлікти — і не ламатися, а відображати, попереджати й фіксувати виняток відповідно до прав.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px;">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:26px;">
+        <div style="font-size:13px;font-weight:700;color:var(--text-soft);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:16px;">Без системи</div>
+        <ul style="display:flex;flex-direction:column;gap:14px;">
+          <li style="display:flex;gap:10px;align-items:flex-start;">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;margin-top:2px;"><circle cx="8" cy="8" r="7" fill="var(--danger-soft)"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5" stroke="var(--danger)" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <span style="font-size:14.5px;line-height:1.5;color:var(--text-soft);">Розклад розкидано по Excel- та Word-файлах без єдиного джерела правди</span>
+          </li>
+          <li style="display:flex;gap:10px;align-items:flex-start;">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;margin-top:2px;"><circle cx="8" cy="8" r="7" fill="var(--danger-soft)"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5" stroke="var(--danger)" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <span style="font-size:14.5px;line-height:1.5;color:var(--text-soft);">Конфлікти аудиторій і викладачів виявляються вручну й постфактум</span>
+          </li>
+          <li style="display:flex;gap:10px;align-items:flex-start;">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;margin-top:2px;"><circle cx="8" cy="8" r="7" fill="var(--danger-soft)"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5" stroke="var(--danger)" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <span style="font-size:14.5px;line-height:1.5;color:var(--text-soft);">Нестандартні назви аудиторій і формати часу губляться при копіюванні</span>
+          </li>
+          <li style="display:flex;gap:10px;align-items:flex-start;">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;margin-top:2px;"><circle cx="8" cy="8" r="7" fill="var(--danger-soft)"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5" stroke="var(--danger)" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <span style="font-size:14.5px;line-height:1.5;color:var(--text-soft);">Немає журналу, хто і коли вносив зміни до розкладу</span>
+          </li>
+        </ul>
+      </div>
+
+      <div style="background:var(--surface);border:1px solid var(--accent);border-radius:16px;padding:26px;">
+        <div style="font-size:13px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:16px;">З системою</div>
+        <ul style="display:flex;flex-direction:column;gap:14px;">
+          <li style="display:flex;gap:10px;align-items:flex-start;">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;margin-top:2px;"><circle cx="8" cy="8" r="7" fill="var(--success-soft)"/><path d="M5 8.2l1.8 1.8L11 6" stroke="var(--success)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span style="font-size:14.5px;line-height:1.5;color:var(--text);">Єдине джерело правди для всіх факультетів і кафедр</span>
+          </li>
+          <li style="display:flex;gap:10px;align-items:flex-start;">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;margin-top:2px;"><circle cx="8" cy="8" r="7" fill="var(--success-soft)"/><path d="M5 8.2l1.8 1.8L11 6" stroke="var(--success)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span style="font-size:14.5px;line-height:1.5;color:var(--text);">Автоматична перевірка конфліктів із поясненням причини і рівнем важливості</span>
+          </li>
+          <li style="display:flex;gap:10px;align-items:flex-start;">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;margin-top:2px;"><circle cx="8" cy="8" r="7" fill="var(--success-soft)"/><path d="M5 8.2l1.8 1.8L11 6" stroke="var(--success)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span style="font-size:14.5px;line-height:1.5;color:var(--text);">Нормалізація назв аудиторій і часу без втрати нестандартних значень</span>
+          </li>
+          <li style="display:flex;gap:10px;align-items:flex-start;">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;margin-top:2px;"><circle cx="8" cy="8" r="7" fill="var(--success-soft)"/><path d="M5 8.2l1.8 1.8L11 6" stroke="var(--success)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span style="font-size:14.5px;line-height:1.5;color:var(--text);">Повний Audit Log з можливістю обґрунтованого override</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="principles" style="max-width:1200px;margin:0 auto;padding:64px 24px;">
+  <div style="max-width:70ch;margin-bottom:36px;">
+    <span style="font-family:var(--font-mono);font-size:11.5px;font-weight:600;color:var(--accent-2);text-transform:uppercase;letter-spacing:0.06em;">Основні принципи</span>
+    <h2 style="font-size:clamp(24px,3vw,32px);font-weight:800;margin:12px 0 0;">На чому будується логіка системи</h2>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;">
+      <div style="font-family:var(--font-display);font-weight:800;font-size:22px;color:var(--accent-soft);-webkit-text-stroke:1px var(--accent);margin-bottom:10px;">01</div>
+      <h3 style="font-size:16px;font-weight:700;margin-bottom:10px;">Конфлікт не завжди помилка</h3>
+      <p style="font-size:14px;line-height:1.55;color:var(--text-soft);">Система виявляє конфлікт, пояснює його, попереджає користувача і за наявності права дозволяє свідомий override із обов'язковим записом причини в журнал.</p>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;">
+      <div style="font-family:var(--font-display);font-weight:800;font-size:22px;color:var(--accent-soft);-webkit-text-stroke:1px var(--accent);margin-bottom:10px;">02</div>
+      <h3 style="font-size:16px;font-weight:700;margin-bottom:10px;">Тиждень рахується від семестру</h3>
+      <p style="font-size:14px;line-height:1.55;color:var(--text-soft);">Номер навчального тижня визначається від дати початку конкретного семестру, а не від календарного ISO-тижня року.</p>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;">
+      <div style="font-family:var(--font-display);font-weight:800;font-size:22px;color:var(--accent-soft);-webkit-text-stroke:1px var(--accent);margin-bottom:10px;">03</div>
+      <h3 style="font-size:16px;font-weight:700;margin-bottom:10px;">Другий семестр — нова нумерація</h3>
+      <p style="font-size:14px;line-height:1.55;color:var(--text-soft);">ІІ семестр завжди починає власний відлік тижнів з 1, незалежно від того, скільки тижнів тривав І семестр.</p>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;">
+      <div style="font-family:var(--font-display);font-weight:800;font-size:22px;color:var(--accent-soft);-webkit-text-stroke:1px var(--accent);margin-bottom:10px;">04</div>
+      <h3 style="font-size:16px;font-weight:700;margin-bottom:10px;">Розширювана структура</h3>
+      <p style="font-size:14px;line-height:1.55;color:var(--text-soft);">Ієрархія «Університет → Факультет → Кафедра» та permission-модель проєктуються розширюваними для нових підрозділів і ролей.</p>
+    </div>
+  </div>
+</section>
+
+<section id="roles" style="background:var(--surface-2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div style="max-width:1200px;margin:0 auto;padding:64px 24px;">
+    <div style="max-width:70ch;margin-bottom:36px;">
+      <span style="font-family:var(--font-mono);font-size:11.5px;font-weight:600;color:var(--accent-2);text-transform:uppercase;letter-spacing:0.06em;">Ролі користувачів</span>
+      <h2 style="font-size:clamp(24px,3vw,32px);font-weight:800;margin:12px 0 0;">Хто працює із системою</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;">
+        <div style="width:38px;height:38px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12.5px;margin-bottom:12px;">СА</div>
+        <h4 style="font-size:14.5px;font-weight:700;margin-bottom:6px;">Суперадміністратор</h4>
+        <p style="font-size:13px;line-height:1.5;color:var(--text-soft);">Повний доступ: користувачі, ролі, факультети, кафедри, календар, правила конфліктів, аудит, імпорт/експорт.</p>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;">
+        <div style="width:38px;height:38px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12.5px;margin-bottom:12px;">ГА</div>
+        <h4 style="font-size:14.5px;font-weight:700;margin-bottom:6px;">Головний адміністратор</h4>
+        <p style="font-size:13px;line-height:1.5;color:var(--text-soft);">Доступ до всієї навчальної структури; окремі системні налаштування можуть бути недоступні.</p>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;">
+        <div style="width:38px;height:38px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12.5px;margin-bottom:12px;">АФ</div>
+        <h4 style="font-size:14.5px;font-weight:700;margin-bottom:6px;">Адміністратор факультету</h4>
+        <p style="font-size:13px;line-height:1.5;color:var(--text-soft);">Працює лише в межах визначеного факультету або підрозділу.</p>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;">
+        <div style="width:38px;height:38px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12.5px;margin-bottom:12px;">АК</div>
+        <h4 style="font-size:14.5px;font-weight:700;margin-bottom:6px;">Адміністратор кафедри</h4>
+        <p style="font-size:13px;line-height:1.5;color:var(--text-soft);">Доступ до даних своєї кафедри та дозволених пов'язаних ресурсів.</p>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--accent-2);border-radius:14px;padding:20px;">
+        <div style="width:38px;height:38px;border-radius:10px;background:var(--accent-2);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12.5px;margin-bottom:12px;">ДР</div>
+        <h4 style="font-size:14.5px;font-weight:700;margin-bottom:6px;">Диспетчер розкладу</h4>
+        <p style="font-size:13px;line-height:1.5;color:var(--text-soft);">Основний оператор: створення, редагування, перенесення, копіювання, override, імпорт, експорт.</p>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;">
+        <div style="width:38px;height:38px;border-radius:10px;background:var(--success);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12.5px;margin-bottom:12px;">ВК</div>
+        <h4 style="font-size:14.5px;font-weight:700;margin-bottom:6px;">Викладач</h4>
+        <p style="font-size:13px;line-height:1.5;color:var(--text-soft);">Перегляд особистого розкладу, груп, аудиторій і змін без редагування.</p>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;">
+        <div style="width:38px;height:38px;border-radius:10px;background:var(--success);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12.5px;margin-bottom:12px;">СТ</div>
+        <h4 style="font-size:14.5px;font-weight:700;margin-bottom:6px;">Студент</h4>
+        <p style="font-size:13px;line-height:1.5;color:var(--text-soft);">Перегляд розкладу своєї групи, потоку та підгрупи.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="architecture" style="max-width:1200px;margin:0 auto;padding:64px 24px;">
+  <div style="max-width:70ch;margin-bottom:40px;">
+    <span style="font-family:var(--font-mono);font-size:11.5px;font-weight:600;color:var(--accent-2);text-transform:uppercase;letter-spacing:0.06em;">Архітектура</span>
+    <h2 style="font-size:clamp(24px,3vw,32px);font-weight:800;margin:12px 0 0;">Загальна схема системи</h2>
+  </div>
+
+  <div style="display:flex;flex-direction:column;align-items:center;max-width:760px;margin:0 auto;">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 28px;font-weight:700;font-size:14px;box-shadow:0 8px 20px -14px rgba(27,30,42,0.4);">Браузер · Desktop / Mobile</div>
+    <div style="width:2px;height:22px;background:var(--border);"></div>
+    <div style="color:var(--text-soft);margin-top:-10px;margin-bottom:2px;">▾</div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 28px;font-weight:700;font-size:14px;box-shadow:0 8px 20px -14px rgba(27,30,42,0.4);">Frontend (React / TypeScript)</div>
+    <div style="width:2px;height:22px;background:var(--border);"></div>
+    <div style="color:var(--text-soft);margin-top:-10px;margin-bottom:2px;">▾</div>
+    <div style="background:var(--accent);color:#fff;border-radius:12px;padding:14px 28px;font-weight:700;font-size:14px;box-shadow:0 8px 20px -14px rgba(27,30,42,0.4);">Backend API (FastAPI)</div>
+    <div style="width:2px;height:22px;background:var(--border);"></div>
+    <div style="color:var(--text-soft);margin-top:-10px;margin-bottom:2px;">▾</div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;">
+      <div style="background:var(--surface);border:1px solid var(--phase-sched);color:var(--phase-sched);border-radius:12px;padding:12px 18px;font-weight:700;font-size:13px;">Schedule Module</div>
+      <div style="background:var(--surface);border:1px solid var(--phase-conf);color:var(--phase-conf);border-radius:12px;padding:12px 18px;font-weight:700;font-size:13px;">Conflict Service</div>
+      <div style="background:var(--surface);border:1px solid var(--phase-found);color:var(--phase-found);border-radius:12px;padding:12px 18px;font-weight:700;font-size:13px;">Auth / RBAC</div>
+    </div>
+    <div style="width:2px;height:22px;background:var(--border);"></div>
+    <div style="color:var(--text-soft);margin-top:-10px;margin-bottom:2px;">▾</div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 24px;font-weight:700;font-size:13px;">PostgreSQL</div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 24px;font-weight:700;font-size:13px;">Redis</div>
+    </div>
+    <div style="width:2px;height:22px;background:var(--border);"></div>
+    <div style="color:var(--text-soft);margin-top:-10px;margin-bottom:2px;">▾</div>
+    <div style="background:var(--surface-2);border:1px dashed var(--border);border-radius:12px;padding:14px 28px;font-weight:700;font-size:14px;">Background Workers</div>
+    <div style="width:2px;height:22px;background:var(--border);"></div>
+    <div style="color:var(--text-soft);margin-top:-10px;margin-bottom:2px;">▾</div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;">
+      <div style="background:var(--surface);border:1px solid var(--accent-2);color:var(--accent-2);border-radius:12px;padding:10px 16px;font-weight:700;font-size:12.5px;">Excel Export</div>
+      <div style="background:var(--surface);border:1px solid var(--accent-2);color:var(--accent-2);border-radius:12px;padding:10px 16px;font-weight:700;font-size:12.5px;">Import</div>
+      <div style="background:var(--surface);border:1px solid var(--accent-2);color:var(--accent-2);border-radius:12px;padding:10px 16px;font-weight:700;font-size:12.5px;">Cache Warm-up</div>
+    </div>
+  </div>
+</section>
+
+<section id="stack" style="background:var(--surface-2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div style="max-width:1200px;margin:0 auto;padding:64px 24px;">
+    <div style="max-width:70ch;margin-bottom:36px;">
+      <span style="font-family:var(--font-mono);font-size:11.5px;font-weight:600;color:var(--accent-2);text-transform:uppercase;letter-spacing:0.06em;">Технологічний стек</span>
+      <h2 style="font-size:clamp(24px,3vw,32px);font-weight:800;margin:12px 0 0;">Рекомендований, не обов'язковий</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px;">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;">
+        <h4 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--accent);margin-bottom:14px;">Backend</h4>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          <span style="background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:5px 12px;font-family:var(--font-mono);font-size:12px;">Python</span>
+          <span style="background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:5px 12px;font-family:var(--font-mono);font-size:12px;">FastAPI</span>
+          <span style="background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:5px 12px;font-family:var(--font-mono);font-size:12px;">SQLAlchemy</span>
+          <span style="background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:5px 12px;font-family:var(--font-mono);font-size:12px;">PostgreSQL</span>
+          <span style="background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:5px 12px;font-family:var(--font-mono);font-size:12px;">Redis</span>
+          <span style="background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:5px 12px;font-family:var(--font-mono);font-size:12px;">Celery / RQ</span>
+        </div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;">
+        <h4 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--accent);margin-bottom:14px;">Frontend</h4>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          <span style="background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:5px 12px;font-family:var(--font-mono);font-size:12px;">React / Vue / Angular</span>
+          <span style="background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:5px 12px;font-family:var(--font-mono);font-size:12px;">TypeScript</span>
+        </div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;">
+        <h4 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--accent);margin-bottom:14px;">Excel</h4>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          <span style="background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:5px 12px;font-family:var(--font-mono);font-size:12px;">openpyxl</span>
+          <span style="background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:5px 12px;font-family:var(--font-mono);font-size:12px;">BytesIO</span>
+        </div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;">
+        <h4 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--accent);margin-bottom:14px;">Infrastructure</h4>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          <span style="background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:5px 12px;font-family:var(--font-mono);font-size:12px;">Docker</span>
+          <span style="background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:5px 12px;font-family:var(--font-mono);font-size:12px;">Nginx</span>
+          <span style="background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:5px 12px;font-family:var(--font-mono);font-size:12px;">PostgreSQL</span>
+          <span style="background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:5px 12px;font-family:var(--font-mono);font-size:12px;">Redis</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="features" style="max-width:1200px;margin:0 auto;padding:64px 24px;">
+  <div style="max-width:70ch;margin-bottom:36px;">
+    <span style="font-family:var(--font-mono);font-size:11.5px;font-weight:600;color:var(--accent-2);text-transform:uppercase;letter-spacing:0.06em;">Ключові можливості</span>
+    <h2 style="font-size:clamp(24px,3vw,32px);font-weight:800;margin:12px 0 0;">Що вирізняє цю систему</h2>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;">
+      <div style="width:44px;height:44px;border-radius:12px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;margin-bottom:14px;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,3 21,8 12,13 3,8"/><polyline points="3,13 12,18 21,13"/></svg>
+      </div>
+      <h3 style="font-size:15.5px;font-weight:700;margin-bottom:8px;">Гнучка модель заняття</h3>
+      <p style="font-size:13.5px;line-height:1.55;color:var(--text-soft);">Кілька викладачів і аудиторій, поділ груп на підгрупи, потоки без обов'язкового формального створення.</p>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;">
+      <div style="width:44px;height:44px;border-radius:12px;background:var(--phase-conf-soft);display:flex;align-items:center;justify-content:center;margin-bottom:14px;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--phase-conf)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 L21 19 L3 19 Z"/><line x1="12" y1="10" x2="12" y2="14"/><circle cx="12" cy="16.6" r="0.6" fill="var(--phase-conf)" stroke="none"/></svg>
+      </div>
+      <h3 style="font-size:15.5px;font-weight:700;margin-bottom:8px;">Розумне виявлення конфліктів</h3>
+      <p style="font-size:13.5px;line-height:1.55;color:var(--text-soft);">З урахуванням парності тижнів (ODD / EVEN / BOTH) і трьох рівнів важливості: INFO, WARNING, ERROR.</p>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;">
+      <div style="width:44px;height:44px;border-radius:12px;background:var(--phase-excel-soft);display:flex;align-items:center;justify-content:center;margin-bottom:14px;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--phase-excel)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="4" x2="9" y2="20"/><line x1="15" y1="4" x2="15" y2="20"/></svg>
+      </div>
+      <h3 style="font-size:15.5px;font-weight:700;margin-bottom:8px;">Excel-експорт «як для друку»</h3>
+      <p style="font-size:13.5px;line-height:1.55;color:var(--text-soft);">Дворядкова сітка odd/even, об'єднання клітинок, freeze panes, книжкова шапка при друку в Landscape.</p>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;">
+      <div style="width:44px;height:44px;border-radius:12px;background:var(--phase-perf-soft);display:flex;align-items:center;justify-content:center;margin-bottom:14px;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--phase-perf)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="13,2 4,14 11,14 10,22 20,9 13,9"/></svg>
+      </div>
+      <h3 style="font-size:15.5px;font-weight:700;margin-bottom:8px;">Redis-кешування</h3>
+      <p style="font-size:13.5px;line-height:1.55;color:var(--text-soft);">Кеш розкладу групи, викладача, аудиторії й кафедри з миттєвою інвалідацією при будь-якій зміні.</p>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;">
+      <div style="width:44px;height:44px;border-radius:12px;background:var(--phase-found-soft);display:flex;align-items:center;justify-content:center;margin-bottom:14px;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--phase-found)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+      </div>
+      <h3 style="font-size:15.5px;font-weight:700;margin-bottom:8px;">Мобільний перегляд «Сьогодні»</h3>
+      <p style="font-size:13.5px;line-height:1.55;color:var(--text-soft);">Mobile-first сценарій карток замість урізаної desktop-таблиці на маленьких екранах.</p>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;">
+      <div style="width:44px;height:44px;border-radius:12px;background:var(--phase-sched-soft);display:flex;align-items:center;justify-content:center;margin-bottom:14px;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--phase-sched)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l4 4v16H6z"/><polyline points="15,2 15,6 19,6"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="15" y2="16"/></svg>
+      </div>
+      <h3 style="font-size:15.5px;font-weight:700;margin-bottom:8px;">Повний Audit Log</h3>
+      <p style="font-size:13.5px;line-height:1.55;color:var(--text-soft);">Журнал override, змін прав, імпорту та масових операцій зі старими й новими значеннями.</p>
+    </div>
+  </div>
+</section>
+
+<section id="team" style="background:var(--surface-2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div style="max-width:1200px;margin:0 auto;padding:64px 24px;">
+    <div style="max-width:70ch;margin-bottom:32px;">
+      <span style="font-family:var(--font-mono);font-size:11.5px;font-weight:600;color:var(--accent-2);text-transform:uppercase;letter-spacing:0.06em;">Команда проєкту</span>
+      <h2 style="font-size:clamp(24px,3vw,32px);font-weight:800;margin:12px 0 0;">Хто розробляє систему</h2>
+      <p style="font-size:13.5px;color:var(--text-soft);margin-top:10px;">Ролі нижче — плейсхолдери; замініть підписи [Ім'я Прізвище] на реальних учасників команди.</p>
+    </div>
+
+    <div style="background:var(--surface);border:1.5px solid var(--accent-2);border-radius:16px;padding:22px 26px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:24px;">
+      <div style="width:56px;height:56px;border-radius:50%;background:var(--accent-2);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;flex-shrink:0;">МТ</div>
+      <div style="flex-grow:1;min-width:200px;">
+        <div style="font-size:12px;font-weight:700;color:var(--accent-2);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px;">Ментор проєкту</div>
+        <div style="font-size:16px;font-weight:700;margin-bottom:4px;">[Ім'я Прізвище]</div>
+        <div style="font-size:13.5px;color:var(--text-soft);">Курує архітектурні рішення, проводить код-рев'ю та контролює якість на кожному спринті.</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;">
+        <div style="width:44px;height:44px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;margin-bottom:12px;">PM</div>
+        <div style="font-size:14.5px;font-weight:700;">[Ім'я Прізвище]</div>
+        <div style="font-size:12px;color:var(--accent);font-weight:600;margin-bottom:8px;">Project Manager / Бізнес-аналітик</div>
+        <p style="font-size:12.5px;line-height:1.5;color:var(--text-soft);">Аналіз вимог, бізнес-логіка, зв'язок із замовником і командою.</p>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;">
+        <div style="width:44px;height:44px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;margin-bottom:12px;">TL</div>
+        <div style="font-size:14.5px;font-weight:700;">[Ім'я Прізвище]</div>
+        <div style="font-size:12px;color:var(--accent);font-weight:600;margin-bottom:8px;">Tech Lead / Backend Architect</div>
+        <p style="font-size:12.5px;line-height:1.5;color:var(--text-soft);">Архітектура системи, ключові технічні рішення, ревʼю коду.</p>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;">
+        <div style="width:44px;height:44px;border-radius:50%;background:var(--phase-sched);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;margin-bottom:12px;">BE</div>
+        <div style="font-size:14.5px;font-weight:700;">[Ім'я Прізвище]</div>
+        <div style="font-size:12px;color:var(--phase-sched);font-weight:600;margin-bottom:8px;">Backend Developer</div>
+        <p style="font-size:12.5px;line-height:1.5;color:var(--text-soft);">FastAPI, бізнес-логіка розкладу, Conflict Service.</p>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;">
+        <div style="width:44px;height:44px;border-radius:50%;background:var(--phase-excel);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;margin-bottom:12px;">BE</div>
+        <div style="font-size:14.5px;font-weight:700;">[Ім'я Прізвище]</div>
+        <div style="font-size:12px;color:var(--phase-excel);font-weight:600;margin-bottom:8px;">Backend Developer</div>
+        <p style="font-size:12.5px;line-height:1.5;color:var(--text-soft);">ExcelExportService, імпорт, Redis-кешування.</p>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;">
+        <div style="width:44px;height:44px;border-radius:50%;background:var(--phase-found);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;margin-bottom:12px;">FE</div>
+        <div style="font-size:14.5px;font-weight:700;">[Ім'я Прізвище]</div>
+        <div style="font-size:12px;color:var(--phase-found);font-weight:600;margin-bottom:8px;">Frontend Developer</div>
+        <p style="font-size:12.5px;line-height:1.5;color:var(--text-soft);">React / TypeScript, інтерфейс диспетчера розкладу.</p>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;">
+        <div style="width:44px;height:44px;border-radius:50%;background:var(--phase-cal);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;margin-bottom:12px;">FE</div>
+        <div style="font-size:14.5px;font-weight:700;">[Ім'я Прізвище]</div>
+        <div style="font-size:12px;color:var(--phase-cal);font-weight:600;margin-bottom:8px;">Frontend Developer</div>
+        <p style="font-size:12.5px;line-height:1.5;color:var(--text-soft);">Адаптивний мобільний інтерфейс, UX-деталі.</p>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;">
+        <div style="width:44px;height:44px;border-radius:50%;background:var(--phase-perf);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;margin-bottom:12px;">QA</div>
+        <div style="font-size:14.5px;font-weight:700;">[Ім'я Прізвище]</div>
+        <div style="font-size:12px;color:var(--phase-perf);font-weight:600;margin-bottom:8px;">QA Engineer</div>
+        <p style="font-size:12.5px;line-height:1.5;color:var(--text-soft);">Тестування конфліктів, Excel-експорту, регресія.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="roadmap" style="max-width:1200px;margin:0 auto;padding:64px 24px;">
+  <div style="max-width:70ch;margin-bottom:36px;">
+    <span style="font-family:var(--font-mono);font-size:11.5px;font-weight:600;color:var(--accent-2);text-transform:uppercase;letter-spacing:0.06em;">Дорожня карта</span>
+    <h2 style="font-size:clamp(24px,3vw,32px);font-weight:800;margin:12px 0 16px;">16 спринтів — від ініціації до захисту</h2>
+    <p style="font-size:15px;line-height:1.6;color:var(--text-soft);">Спринти 0 і 1 наповнені реальним планом; решта — заготовки, які буде заповнено по мірі отримання завдань. Статус пунктів оновлює команда проєкту; спринт вважається завершеним, коли виконано всі його пункти.</p>
+    <div id="sprint-progress" style="display:inline-block;margin-top:16px;font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--accent);background:var(--accent-soft);padding:6px 14px;border-radius:999px;">Завершено спринтів: 0 / 16</div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;">
+
+    <div class="sprint-row" id="sprint-row-0" data-sprint="0" style="display:flex;gap:20px;">
+      <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;width:44px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--phase-found);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;">0</div>
+        <div style="width:2px;flex-grow:1;background:var(--border);margin-top:4px;"></div>
+      </div>
+      <div style="flex-grow:1;min-width:0;padding-bottom:28px;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 24px;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <span style="background:var(--phase-found-soft);color:var(--phase-found);font-family:var(--font-mono);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;padding:4px 10px;border-radius:999px;">Ініціація</span>
+              <h3 style="font-size:17px;font-weight:700;">Спринт 0. Ініціація проєкту. Бізнес-аналіз</h3>
+            </div>
+            <span class="sprint-status" data-sprint="0" style="flex-shrink:0;font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text-soft);background:var(--surface-2);border:1px solid var(--border);padding:4px 10px;border-radius:999px;"></span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;"><span style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text);background:var(--surface-2);border:1px solid var(--border);padding:3px 9px;border-radius:8px;">09.09 – 23.09</span><span style="font-size:12.5px;color:var(--text-soft);">Оцінюється в першому спринті. Зробити копію чек-листа завдань.</span></div>
+          <ul style="display:flex;flex-direction:column;">
+            <li class="task" style="display:flex;gap:10px;padding:5px 0;"><input type="checkbox" class="task-check" data-sprint="0" data-task="s0-1" disabled aria-label="Пункт виконано" style="width:16px;height:16px;flex-shrink:0;margin-top:3px;accent-color:var(--success);"><span class="txt" style="font-size:14px;line-height:1.5;color:var(--text-soft);">Комунікації з клієнтом і в команді, Trello для команди <b style="font-weight:700;color:var(--accent);font-size:12.5px;">— PM</b></span></li><li class="task" style="display:flex;gap:10px;padding:5px 0;"><input type="checkbox" class="task-check" data-sprint="0" data-task="s0-2" disabled aria-label="Пункт виконано" style="width:16px;height:16px;flex-shrink:0;margin-top:3px;accent-color:var(--success);"><span class="txt" style="font-size:14px;line-height:1.5;color:var(--text-soft);">Органайзер проєкту <b style="font-weight:700;color:var(--accent);font-size:12.5px;">— PM</b></span></li><li class="task" style="display:flex;gap:10px;padding:5px 0;"><input type="checkbox" class="task-check" data-sprint="0" data-task="s0-3" disabled aria-label="Пункт виконано" style="width:16px;height:16px;flex-shrink:0;margin-top:3px;accent-color:var(--success);"><span class="txt" style="font-size:14px;line-height:1.5;color:var(--text-soft);">Список команд, учасників і ролей <b style="font-weight:700;color:var(--accent);font-size:12.5px;">— PM</b></span></li><li class="task" style="display:flex;gap:10px;padding:5px 0;"><input type="checkbox" class="task-check" data-sprint="0" data-task="s0-4" disabled aria-label="Пункт виконано" style="width:16px;height:16px;flex-shrink:0;margin-top:3px;accent-color:var(--success);"><span class="txt" style="font-size:14px;line-height:1.5;color:var(--text-soft);">Опис ідеї проєкту (концепція продукту) <b style="font-weight:700;color:var(--accent);font-size:12.5px;">— БА + PM + UI/UX + техліди + ментор</b></span></li><li class="task" style="display:flex;gap:10px;padding:5px 0;"><input type="checkbox" class="task-check" data-sprint="0" data-task="s0-5" disabled aria-label="Пункт виконано" style="width:16px;height:16px;flex-shrink:0;margin-top:3px;accent-color:var(--success);"><span class="txt" style="font-size:14px;line-height:1.5;color:var(--text-soft);">Stakeholder List і Stakeholder Onion Diagram <b style="font-weight:700;color:var(--accent);font-size:12.5px;">— PM + БА</b></span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="sprint-row" id="sprint-row-1" data-sprint="1" style="display:flex;gap:20px;">
+      <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;width:44px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--phase-found);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;">1</div>
+        <div style="width:2px;flex-grow:1;background:var(--border);margin-top:4px;"></div>
+      </div>
+      <div style="flex-grow:1;min-width:0;padding-bottom:28px;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 24px;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <span style="background:var(--phase-found-soft);color:var(--phase-found);font-family:var(--font-mono);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;padding:4px 10px;border-radius:999px;">Аналіз вимог</span>
+              <h3 style="font-size:17px;font-weight:700;">Спринт 1. Вимоги, стейкголдери, вайрфрейми</h3>
+            </div>
+            <span class="sprint-status" data-sprint="1" style="flex-shrink:0;font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text-soft);background:var(--surface-2);border:1px solid var(--border);padding:4px 10px;border-radius:999px;"></span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;"><span style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text);background:var(--surface-2);border:1px solid var(--border);padding:3px 9px;border-radius:8px;">23.09 – 07.10</span><span style="font-size:12.5px;color:var(--text-soft);">Максимум 4 бали. Зробити копію чек-листа завдань.</span></div>
+          <ul style="display:flex;flex-direction:column;">
+            <li class="task" style="display:flex;gap:10px;padding:5px 0;"><input type="checkbox" class="task-check" data-sprint="1" data-task="s1-1" disabled aria-label="Пункт виконано" style="width:16px;height:16px;flex-shrink:0;margin-top:3px;accent-color:var(--success);"><span class="txt" style="font-size:14px;line-height:1.5;color:var(--text-soft);">Інтерв’ю з замовником: agenda і follow-up <b style="font-weight:700;color:var(--accent);font-size:12.5px;">— вся команда / PM</b></span></li><li class="task" style="display:flex;gap:10px;padding:5px 0;"><input type="checkbox" class="task-check" data-sprint="1" data-task="s1-2" disabled aria-label="Пункт виконано" style="width:16px;height:16px;flex-shrink:0;margin-top:3px;accent-color:var(--success);"><span class="txt" style="font-size:14px;line-height:1.5;color:var(--text-soft);">Stakeholder Register, Support Level Matrix, Engagement &amp; Communication Plan <b style="font-weight:700;color:var(--accent);font-size:12.5px;">— PM + БА</b></span></li><li class="task" style="display:flex;gap:10px;padding:5px 0;"><input type="checkbox" class="task-check" data-sprint="1" data-task="s1-3" disabled aria-label="Пункт виконано" style="width:16px;height:16px;flex-shrink:0;margin-top:3px;accent-color:var(--success);"><span class="txt" style="font-size:14px;line-height:1.5;color:var(--text-soft);">Business Objectives and Success Criteria (SMART) <b style="font-weight:700;color:var(--accent);font-size:12.5px;">— БА</b></span></li><li class="task" style="display:flex;gap:10px;padding:5px 0;"><input type="checkbox" class="task-check" data-sprint="1" data-task="s1-4" disabled aria-label="Пункт виконано" style="width:16px;height:16px;flex-shrink:0;margin-top:3px;accent-color:var(--success);"><span class="txt" style="font-size:14px;line-height:1.5;color:var(--text-soft);">User Personas та User roles <b style="font-weight:700;color:var(--accent);font-size:12.5px;">— БА + UI/UX (+ PM, тімліди)</b></span></li><li class="task" style="display:flex;gap:10px;padding:5px 0;"><input type="checkbox" class="task-check" data-sprint="1" data-task="s1-5" disabled aria-label="Пункт виконано" style="width:16px;height:16px;flex-shrink:0;margin-top:3px;accent-color:var(--success);"><span class="txt" style="font-size:14px;line-height:1.5;color:var(--text-soft);">Product Vision і User Story Map <b style="font-weight:700;color:var(--accent);font-size:12.5px;">— БА + PM + UI/UX + тімліди</b></span></li><li class="task" style="display:flex;gap:10px;padding:5px 0;"><input type="checkbox" class="task-check" data-sprint="1" data-task="s1-6" disabled aria-label="Пункт виконано" style="width:16px;height:16px;flex-shrink:0;margin-top:3px;accent-color:var(--success);"><span class="txt" style="font-size:14px;line-height:1.5;color:var(--text-soft);">Вайрфрейми застосунку (схематично, папір / Figma) <b style="font-weight:700;color:var(--accent);font-size:12.5px;">— UI/UX + БА</b></span></li><li class="task" style="display:flex;gap:10px;padding:5px 0;"><input type="checkbox" class="task-check" data-sprint="1" data-task="s1-7" disabled aria-label="Пункт виконано" style="width:16px;height:16px;flex-shrink:0;margin-top:3px;accent-color:var(--success);"><span class="txt" style="font-size:14px;line-height:1.5;color:var(--text-soft);">Лаба 1</span></li><li class="task" style="display:flex;gap:10px;padding:5px 0;"><input type="checkbox" class="task-check" data-sprint="1" data-task="s1-8" disabled aria-label="Пункт виконано" style="width:16px;height:16px;flex-shrink:0;margin-top:3px;accent-color:var(--success);"><span class="txt" style="font-size:14px;line-height:1.5;color:var(--text-soft);">Технічна база: набори даних, стек, архітектура, проєктування БД <b style="font-weight:700;color:var(--accent);font-size:12.5px;">— тімлід + команда розробки</b></span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="sprint-row" id="sprint-row-2" data-sprint="2" style="display:flex;gap:20px;">
+      <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;width:44px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--phase-init);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;">2</div>
+        <div style="width:2px;flex-grow:1;background:var(--border);margin-top:4px;"></div>
+      </div>
+      <div style="flex-grow:1;min-width:0;padding-bottom:28px;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 24px;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <span style="background:var(--phase-init-soft);color:var(--phase-init);font-family:var(--font-mono);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;padding:4px 10px;border-radius:999px;">Заплановано</span>
+              <h3 style="font-size:17px;font-weight:700;">Спринт 2</h3>
+            </div>
+            <span class="sprint-status" data-sprint="2" style="flex-shrink:0;font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text-soft);background:var(--surface-2);border:1px solid var(--border);padding:4px 10px;border-radius:999px;"></span>
+          </div>
+          
+          <ul style="display:flex;flex-direction:column;">
+            <li class="task-ph" style="display:flex;gap:10px;padding:5px 0;"><span style="width:16px;height:16px;flex-shrink:0;margin-top:3px;border:1.5px dashed var(--border);border-radius:4px;"></span><span style="font-size:14px;line-height:1.5;color:var(--text-soft);">Завдання поки не визначені — буде додано</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="sprint-row" id="sprint-row-3" data-sprint="3" style="display:flex;gap:20px;">
+      <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;width:44px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--phase-init);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;">3</div>
+        <div style="width:2px;flex-grow:1;background:var(--border);margin-top:4px;"></div>
+      </div>
+      <div style="flex-grow:1;min-width:0;padding-bottom:28px;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 24px;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <span style="background:var(--phase-init-soft);color:var(--phase-init);font-family:var(--font-mono);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;padding:4px 10px;border-radius:999px;">Заплановано</span>
+              <h3 style="font-size:17px;font-weight:700;">Спринт 3</h3>
+            </div>
+            <span class="sprint-status" data-sprint="3" style="flex-shrink:0;font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text-soft);background:var(--surface-2);border:1px solid var(--border);padding:4px 10px;border-radius:999px;"></span>
+          </div>
+          
+          <ul style="display:flex;flex-direction:column;">
+            <li class="task-ph" style="display:flex;gap:10px;padding:5px 0;"><span style="width:16px;height:16px;flex-shrink:0;margin-top:3px;border:1.5px dashed var(--border);border-radius:4px;"></span><span style="font-size:14px;line-height:1.5;color:var(--text-soft);">Завдання поки не визначені — буде додано</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="sprint-row" id="sprint-row-4" data-sprint="4" style="display:flex;gap:20px;">
+      <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;width:44px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--phase-init);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;">4</div>
+        <div style="width:2px;flex-grow:1;background:var(--border);margin-top:4px;"></div>
+      </div>
+      <div style="flex-grow:1;min-width:0;padding-bottom:28px;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 24px;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <span style="background:var(--phase-init-soft);color:var(--phase-init);font-family:var(--font-mono);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;padding:4px 10px;border-radius:999px;">Заплановано</span>
+              <h3 style="font-size:17px;font-weight:700;">Спринт 4</h3>
+            </div>
+            <span class="sprint-status" data-sprint="4" style="flex-shrink:0;font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text-soft);background:var(--surface-2);border:1px solid var(--border);padding:4px 10px;border-radius:999px;"></span>
+          </div>
+          
+          <ul style="display:flex;flex-direction:column;">
+            <li class="task-ph" style="display:flex;gap:10px;padding:5px 0;"><span style="width:16px;height:16px;flex-shrink:0;margin-top:3px;border:1.5px dashed var(--border);border-radius:4px;"></span><span style="font-size:14px;line-height:1.5;color:var(--text-soft);">Завдання поки не визначені — буде додано</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="sprint-row" id="sprint-row-5" data-sprint="5" style="display:flex;gap:20px;">
+      <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;width:44px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--phase-init);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;">5</div>
+        <div style="width:2px;flex-grow:1;background:var(--border);margin-top:4px;"></div>
+      </div>
+      <div style="flex-grow:1;min-width:0;padding-bottom:28px;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 24px;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <span style="background:var(--phase-init-soft);color:var(--phase-init);font-family:var(--font-mono);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;padding:4px 10px;border-radius:999px;">Заплановано</span>
+              <h3 style="font-size:17px;font-weight:700;">Спринт 5</h3>
+            </div>
+            <span class="sprint-status" data-sprint="5" style="flex-shrink:0;font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text-soft);background:var(--surface-2);border:1px solid var(--border);padding:4px 10px;border-radius:999px;"></span>
+          </div>
+          
+          <ul style="display:flex;flex-direction:column;">
+            <li class="task-ph" style="display:flex;gap:10px;padding:5px 0;"><span style="width:16px;height:16px;flex-shrink:0;margin-top:3px;border:1.5px dashed var(--border);border-radius:4px;"></span><span style="font-size:14px;line-height:1.5;color:var(--text-soft);">Завдання поки не визначені — буде додано</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="sprint-row" id="sprint-row-6" data-sprint="6" style="display:flex;gap:20px;">
+      <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;width:44px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--phase-init);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;">6</div>
+        <div style="width:2px;flex-grow:1;background:var(--border);margin-top:4px;"></div>
+      </div>
+      <div style="flex-grow:1;min-width:0;padding-bottom:28px;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 24px;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <span style="background:var(--phase-init-soft);color:var(--phase-init);font-family:var(--font-mono);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;padding:4px 10px;border-radius:999px;">Заплановано</span>
+              <h3 style="font-size:17px;font-weight:700;">Спринт 6</h3>
+            </div>
+            <span class="sprint-status" data-sprint="6" style="flex-shrink:0;font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text-soft);background:var(--surface-2);border:1px solid var(--border);padding:4px 10px;border-radius:999px;"></span>
+          </div>
+          
+          <ul style="display:flex;flex-direction:column;">
+            <li class="task-ph" style="display:flex;gap:10px;padding:5px 0;"><span style="width:16px;height:16px;flex-shrink:0;margin-top:3px;border:1.5px dashed var(--border);border-radius:4px;"></span><span style="font-size:14px;line-height:1.5;color:var(--text-soft);">Завдання поки не визначені — буде додано</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="sprint-row" id="sprint-row-7" data-sprint="7" style="display:flex;gap:20px;">
+      <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;width:44px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--phase-init);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;">7</div>
+        <div style="width:2px;flex-grow:1;background:var(--border);margin-top:4px;"></div>
+      </div>
+      <div style="flex-grow:1;min-width:0;padding-bottom:28px;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 24px;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <span style="background:var(--phase-init-soft);color:var(--phase-init);font-family:var(--font-mono);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;padding:4px 10px;border-radius:999px;">Заплановано</span>
+              <h3 style="font-size:17px;font-weight:700;">Спринт 7</h3>
+            </div>
+            <span class="sprint-status" data-sprint="7" style="flex-shrink:0;font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text-soft);background:var(--surface-2);border:1px solid var(--border);padding:4px 10px;border-radius:999px;"></span>
+          </div>
+          
+          <ul style="display:flex;flex-direction:column;">
+            <li class="task-ph" style="display:flex;gap:10px;padding:5px 0;"><span style="width:16px;height:16px;flex-shrink:0;margin-top:3px;border:1.5px dashed var(--border);border-radius:4px;"></span><span style="font-size:14px;line-height:1.5;color:var(--text-soft);">Завдання поки не визначені — буде додано</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="sprint-row" id="sprint-row-8" data-sprint="8" style="display:flex;gap:20px;">
+      <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;width:44px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--phase-init);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;">8</div>
+        <div style="width:2px;flex-grow:1;background:var(--border);margin-top:4px;"></div>
+      </div>
+      <div style="flex-grow:1;min-width:0;padding-bottom:28px;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 24px;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <span style="background:var(--phase-init-soft);color:var(--phase-init);font-family:var(--font-mono);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;padding:4px 10px;border-radius:999px;">Заплановано</span>
+              <h3 style="font-size:17px;font-weight:700;">Спринт 8</h3>
+            </div>
+            <span class="sprint-status" data-sprint="8" style="flex-shrink:0;font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text-soft);background:var(--surface-2);border:1px solid var(--border);padding:4px 10px;border-radius:999px;"></span>
+          </div>
+          
+          <ul style="display:flex;flex-direction:column;">
+            <li class="task-ph" style="display:flex;gap:10px;padding:5px 0;"><span style="width:16px;height:16px;flex-shrink:0;margin-top:3px;border:1.5px dashed var(--border);border-radius:4px;"></span><span style="font-size:14px;line-height:1.5;color:var(--text-soft);">Завдання поки не визначені — буде додано</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="sprint-row" id="sprint-row-9" data-sprint="9" style="display:flex;gap:20px;">
+      <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;width:44px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--phase-init);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;">9</div>
+        <div style="width:2px;flex-grow:1;background:var(--border);margin-top:4px;"></div>
+      </div>
+      <div style="flex-grow:1;min-width:0;padding-bottom:28px;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 24px;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <span style="background:var(--phase-init-soft);color:var(--phase-init);font-family:var(--font-mono);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;padding:4px 10px;border-radius:999px;">Заплановано</span>
+              <h3 style="font-size:17px;font-weight:700;">Спринт 9</h3>
+            </div>
+            <span class="sprint-status" data-sprint="9" style="flex-shrink:0;font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text-soft);background:var(--surface-2);border:1px solid var(--border);padding:4px 10px;border-radius:999px;"></span>
+          </div>
+          
+          <ul style="display:flex;flex-direction:column;">
+            <li class="task-ph" style="display:flex;gap:10px;padding:5px 0;"><span style="width:16px;height:16px;flex-shrink:0;margin-top:3px;border:1.5px dashed var(--border);border-radius:4px;"></span><span style="font-size:14px;line-height:1.5;color:var(--text-soft);">Завдання поки не визначені — буде додано</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="sprint-row" id="sprint-row-10" data-sprint="10" style="display:flex;gap:20px;">
+      <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;width:44px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--phase-init);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;">10</div>
+        <div style="width:2px;flex-grow:1;background:var(--border);margin-top:4px;"></div>
+      </div>
+      <div style="flex-grow:1;min-width:0;padding-bottom:28px;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 24px;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <span style="background:var(--phase-init-soft);color:var(--phase-init);font-family:var(--font-mono);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;padding:4px 10px;border-radius:999px;">Заплановано</span>
+              <h3 style="font-size:17px;font-weight:700;">Спринт 10</h3>
+            </div>
+            <span class="sprint-status" data-sprint="10" style="flex-shrink:0;font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text-soft);background:var(--surface-2);border:1px solid var(--border);padding:4px 10px;border-radius:999px;"></span>
+          </div>
+          
+          <ul style="display:flex;flex-direction:column;">
+            <li class="task-ph" style="display:flex;gap:10px;padding:5px 0;"><span style="width:16px;height:16px;flex-shrink:0;margin-top:3px;border:1.5px dashed var(--border);border-radius:4px;"></span><span style="font-size:14px;line-height:1.5;color:var(--text-soft);">Завдання поки не визначені — буде додано</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="sprint-row" id="sprint-row-11" data-sprint="11" style="display:flex;gap:20px;">
+      <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;width:44px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--phase-init);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;">11</div>
+        <div style="width:2px;flex-grow:1;background:var(--border);margin-top:4px;"></div>
+      </div>
+      <div style="flex-grow:1;min-width:0;padding-bottom:28px;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 24px;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <span style="background:var(--phase-init-soft);color:var(--phase-init);font-family:var(--font-mono);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;padding:4px 10px;border-radius:999px;">Заплановано</span>
+              <h3 style="font-size:17px;font-weight:700;">Спринт 11</h3>
+            </div>
+            <span class="sprint-status" data-sprint="11" style="flex-shrink:0;font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text-soft);background:var(--surface-2);border:1px solid var(--border);padding:4px 10px;border-radius:999px;"></span>
+          </div>
+          
+          <ul style="display:flex;flex-direction:column;">
+            <li class="task-ph" style="display:flex;gap:10px;padding:5px 0;"><span style="width:16px;height:16px;flex-shrink:0;margin-top:3px;border:1.5px dashed var(--border);border-radius:4px;"></span><span style="font-size:14px;line-height:1.5;color:var(--text-soft);">Завдання поки не визначені — буде додано</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="sprint-row" id="sprint-row-12" data-sprint="12" style="display:flex;gap:20px;">
+      <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;width:44px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--phase-init);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;">12</div>
+        <div style="width:2px;flex-grow:1;background:var(--border);margin-top:4px;"></div>
+      </div>
+      <div style="flex-grow:1;min-width:0;padding-bottom:28px;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 24px;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <span style="background:var(--phase-init-soft);color:var(--phase-init);font-family:var(--font-mono);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;padding:4px 10px;border-radius:999px;">Заплановано</span>
+              <h3 style="font-size:17px;font-weight:700;">Спринт 12</h3>
+            </div>
+            <span class="sprint-status" data-sprint="12" style="flex-shrink:0;font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text-soft);background:var(--surface-2);border:1px solid var(--border);padding:4px 10px;border-radius:999px;"></span>
+          </div>
+          
+          <ul style="display:flex;flex-direction:column;">
+            <li class="task-ph" style="display:flex;gap:10px;padding:5px 0;"><span style="width:16px;height:16px;flex-shrink:0;margin-top:3px;border:1.5px dashed var(--border);border-radius:4px;"></span><span style="font-size:14px;line-height:1.5;color:var(--text-soft);">Завдання поки не визначені — буде додано</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="sprint-row" id="sprint-row-13" data-sprint="13" style="display:flex;gap:20px;">
+      <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;width:44px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--phase-init);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;">13</div>
+        <div style="width:2px;flex-grow:1;background:var(--border);margin-top:4px;"></div>
+      </div>
+      <div style="flex-grow:1;min-width:0;padding-bottom:28px;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 24px;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <span style="background:var(--phase-init-soft);color:var(--phase-init);font-family:var(--font-mono);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;padding:4px 10px;border-radius:999px;">Заплановано</span>
+              <h3 style="font-size:17px;font-weight:700;">Спринт 13</h3>
+            </div>
+            <span class="sprint-status" data-sprint="13" style="flex-shrink:0;font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text-soft);background:var(--surface-2);border:1px solid var(--border);padding:4px 10px;border-radius:999px;"></span>
+          </div>
+          
+          <ul style="display:flex;flex-direction:column;">
+            <li class="task-ph" style="display:flex;gap:10px;padding:5px 0;"><span style="width:16px;height:16px;flex-shrink:0;margin-top:3px;border:1.5px dashed var(--border);border-radius:4px;"></span><span style="font-size:14px;line-height:1.5;color:var(--text-soft);">Завдання поки не визначені — буде додано</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="sprint-row" id="sprint-row-14" data-sprint="14" style="display:flex;gap:20px;">
+      <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;width:44px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--phase-init);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;">14</div>
+        <div style="width:2px;flex-grow:1;background:var(--border);margin-top:4px;"></div>
+      </div>
+      <div style="flex-grow:1;min-width:0;padding-bottom:28px;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 24px;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <span style="background:var(--phase-init-soft);color:var(--phase-init);font-family:var(--font-mono);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;padding:4px 10px;border-radius:999px;">Заплановано</span>
+              <h3 style="font-size:17px;font-weight:700;">Спринт 14</h3>
+            </div>
+            <span class="sprint-status" data-sprint="14" style="flex-shrink:0;font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text-soft);background:var(--surface-2);border:1px solid var(--border);padding:4px 10px;border-radius:999px;"></span>
+          </div>
+          
+          <ul style="display:flex;flex-direction:column;">
+            <li class="task-ph" style="display:flex;gap:10px;padding:5px 0;"><span style="width:16px;height:16px;flex-shrink:0;margin-top:3px;border:1.5px dashed var(--border);border-radius:4px;"></span><span style="font-size:14px;line-height:1.5;color:var(--text-soft);">Завдання поки не визначені — буде додано</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="sprint-row" id="sprint-row-15" data-sprint="15" style="display:flex;gap:20px;">
+      <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;width:44px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--phase-final);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;">15</div>
+        
+      </div>
+      <div style="flex-grow:1;min-width:0;">
+        <div style="background:var(--surface);border:1.5px solid var(--phase-final);border-radius:14px;padding:22px 24px;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <span style="background:var(--phase-final-soft);color:var(--phase-final);font-family:var(--font-mono);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;padding:4px 10px;border-radius:999px;">Фінал · Захист</span>
+              <h3 style="font-size:17px;font-weight:700;">Спринт 15. Захист проєкту</h3>
+            </div>
+            <span class="sprint-status" data-sprint="15" style="flex-shrink:0;font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text-soft);background:var(--surface-2);border:1px solid var(--border);padding:4px 10px;border-radius:999px;"></span>
+          </div>
+          
+          <ul style="display:flex;flex-direction:column;">
+            <li class="task-ph" style="display:flex;gap:10px;padding:5px 0;"><span style="width:16px;height:16px;flex-shrink:0;margin-top:3px;border:1.5px dashed var(--border);border-radius:4px;"></span><span style="font-size:14px;line-height:1.5;color:var(--text-soft);">Завдання поки не визначені — буде додано</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section id="dod" style="background:var(--surface-2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div style="max-width:1200px;margin:0 auto;padding:56px 24px;">
+    <div style="max-width:70ch;margin-bottom:28px;">
+      <span style="font-family:var(--font-mono);font-size:11.5px;font-weight:600;color:var(--accent-2);text-transform:uppercase;letter-spacing:0.06em;">Definition of Done</span>
+      <h2 style="font-size:clamp(22px,2.6vw,28px);font-weight:800;margin:12px 0 0;">Критерії готовності системи</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;">
+        <h4 style="font-size:14px;font-weight:700;margin-bottom:10px;color:var(--phase-cal);">Календар</h4>
+        <p style="font-size:13px;line-height:1.55;color:var(--text-soft);">01.09 → тиждень 1, 07.09 → тиждень 1; ІІ семестр завжди починається з тижня 1 незалежно від кількості тижнів І семестру.</p>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;">
+        <h4 style="font-size:14px;font-weight:700;margin-bottom:10px;color:var(--phase-conf);">Конфлікти</h4>
+        <p style="font-size:13px;line-height:1.55;color:var(--text-soft);">ODD+ODD, EVEN+EVEN, BOTH+ODD, BOTH+EVEN → конфлікт; ODD+EVEN → без конфлікту, при однакових дні, парі й ресурсі.</p>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;">
+        <h4 style="font-size:14px;font-weight:700;margin-bottom:10px;color:var(--phase-excel);">Excel-експорт</h4>
+        <p style="font-size:13px;line-height:1.55;color:var(--text-soft);">Пн–Пт завжди; Сб/Нд лише за наявності занять; накладки не губляться; шапка закріплена і повторюється при друку.</p>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;">
+        <h4 style="font-size:14px;font-weight:700;margin-bottom:10px;color:var(--phase-found);">Безпека</h4>
+        <p style="font-size:13px;line-height:1.55;color:var(--text-soft);">Хешування паролів, RBAC на backend, CSRF/XSS і SQL-injection захист, rate limiting, secure cookies.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer style="padding:44px 24px;">
+  <div style="max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;">
+    <div>
+      <div style="font-family:var(--font-display);font-weight:700;font-size:16px;margin-bottom:6px;">Інформаційна система управління та відображення навчального розкладу</div>
+      <div style="font-size:13px;color:var(--text-soft);">Технічне завдання, версія 1.0 · Вебзастосунок</div>
+    </div>
+    <div style="font-size:13px;color:var(--text-soft);max-width:420px;">Склад команди та ім'я ментора на цій сторінці — рольові плейсхолдери; заповніть реальними даними перед публікацією.</div>
+  </div>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  // Редагуйте ТІЛЬКИ цей список: додавайте id виконаних пунктів (формат "s<спринт>-<номер>").
+  // Приклад: var COMPLETED = ["s0-1", "s0-2", "s1-1"];
+  // Відвідувачі сайту змінити статус не можуть — чекбокси лише для читання.
+  var COMPLETED = [];
+
+  var done = {};
+  COMPLETED.forEach(function(id){ done[id] = true; });
+
+  var completedSprints = 0;
+  var rows = document.querySelectorAll('.sprint-row');
+  var total = rows.length;
+
+  Array.prototype.forEach.call(rows, function(row){
+    var tasks = row.querySelectorAll('li.task');
+    var finished = 0;
+    Array.prototype.forEach.call(tasks, function(li){
+      var box = li.querySelector('.task-check');
+      var isDone = !!done[box.getAttribute('data-task')];
+      box.checked = isDone;
+      li.classList.toggle('done', isDone);
+      if (isDone) finished++;
+    });
+    var complete = tasks.length > 0 && finished === tasks.length;
+    row.classList.toggle('done', complete);
+    var st = row.querySelector('.sprint-status');
+    if (st) st.textContent = tasks.length === 0 ? 'Не заплановано' : (complete ? 'Завершено' : finished + ' / ' + tasks.length);
+    if (complete) completedSprints++;
+  });
+
+  var progress = document.getElementById('sprint-progress');
+  if (progress) progress.textContent = 'Завершено спринтів: ' + completedSprints + ' / ' + total;
+})();
+</script>
+</body>
+</html>
