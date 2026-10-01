@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="800" height="800" fill="#F7F5F0"/>
+  <text x="400" y="38" text-anchor="middle" font-size="22" font-weight="700" fill="#1C2033">Stakeholder Onion Diagram</text>
+  <circle cx="400" cy="430" r="350" fill="#E4ECF4" stroke="#234573" stroke-width="2"/>
+  <circle cx="400" cy="430" r="245" fill="#F4E7D2" stroke="#C08A3E" stroke-width="2"/>
+  <circle cx="400" cy="430" r="140" fill="#DEEEE8" stroke="#3E7C6B" stroke-width="2"/>
+  <circle cx="400" cy="430" r="55" fill="#234573"/>
+  <text x="400" y="426" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">Система</text>
+  <text x="400" y="443" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">розкладу</text>
+
+  <g font-size="13" fill="#1C2033" text-anchor="middle">
+    <text x="400" y="340" font-weight="700" fill="#3E7C6B">Користувачі системи</text>
+    <text x="400" y="368">Диспетчери розкладу</text>
+    <text x="400" y="390">Викладачі · Студенти</text>
+    <text x="400" y="490">Адмін факультету</text>
+    <text x="400" y="512">Адмін кафедри</text>
+
+    <text x="400" y="240" font-weight="700" fill="#A67C2E">Організація університету</text>
+    <text x="400" y="262">Навчальний відділ</text>
+    <text x="255" y="440">Деканати</text>
+    <text x="545" y="440">Кафедри</text>
+    <text x="400" y="600">IT-підрозділ</text>
+    <text x="400" y="622">Фонд аудиторій</text>
+
+    <text x="400" y="118" font-weight="700" fill="#234573">Зовнішнє оточення / керівництво</text>
+    <text x="400" y="142">Ректорат (спонсор) · Замовник</text>
+    <text x="400" y="730">Команда розробки · Ментор / викладач курсу</text>
+  </g>
+</svg>

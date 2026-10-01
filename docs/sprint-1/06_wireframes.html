@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Вайрфрейми: система розкладу</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;padding:24px;font-family:Arial,sans-serif;background:#eee;color:#222}
+  h1{font-size:20px;margin:0 0 4px} p.n{margin:0 0 20px;color:#666;font-size:13px}
+  h2{font-size:15px;margin:28px 0 10px}
+  .wrap{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start}
+  .screen{background:#fff;border:2px solid #333;padding:12px}
+  .desk{width:820px;max-width:100%} .mob{width:320px}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+  .box{border:1.5px solid #555;padding:6px 10px;font-size:12px;background:#f5f5f5}
+  .btn{border:1.5px solid #333;padding:6px 12px;font-size:12px;background:#ddd;font-weight:700}
+  table{border-collapse:collapse;width:100%;font-size:11px}
+  th,td{border:1px solid #888;padding:6px;text-align:center;height:44px}
+  th{background:#ddd}
+  td.f{background:#cfd8e6}
+  td.c{background:#f0c9b8;border:2px dashed #b33}
+  .card{border:1.5px solid #333;padding:10px;margin-bottom:10px;font-size:12px}
+  .card b{display:block;margin-bottom:4px}
+  .warn{border:2px dashed #b33;background:#fbe9e2;padding:8px;font-size:12px;margin:10px 0}
+  .row{display:flex;align-items:center;gap:8px;font-size:13px;margin:4px 0}
+  .cb{width:14px;height:14px;border:1.5px solid #333;display:inline-block}
+  .cb.on{background:#333}
+</style>
+</head>
+<body>
+<h1>Вайрфрейми застосунку (схематичні)</h1>
+<p class="n">Спринт 1 · UI/UX + БА. Низька деталізація: структура й ключові елементи, без візуального стилю.</p>
+
+<h2>1. Інтерфейс диспетчера (desktop)</h2>
+<div class="screen desk">
+  <div class="bar">
+    <div class="box">Факультет ▾</div><div class="box">Кафедра ▾</div><div class="box">Група ▾</div><div class="box">Викладач ▾</div>
+    <div class="box">Тиждень: 3 (непарний) ▾</div><div class="btn">+ Заняття</div><div class="btn">Експорт</div>
+  </div>
+  <table>
+    <tr><th>Пара</th><th>ПН</th><th>ВТ</th><th>СР</th><th>ЧТ</th><th>ПТ</th></tr>
+    <tr><th>1<br>08:20</th><td class="f">Мат. аналіз<br>А.203</td><td></td><td class="f">Фізика<br>Б.101</td><td></td><td></td></tr>
+    <tr><th>2<br>09:50</th><td></td><td class="f">Програм.<br>А.305</td><td></td><td></td><td class="f">Хімія<br>Б.204</td></tr>
+    <tr><th>3<br>11:30</th><td class="c">Матем.<br>А.203 ⚠</td><td></td><td class="f">Історія<br>А.110</td><td></td><td></td></tr>
+  </table>
+  <div class="warn">⚠ Конфлікт: аудиторія А.203 вже зайнята. &nbsp;[Скасувати] &nbsp;[Зберегти попри конфлікт → причина]</div>
+  <div class="box">Drag &amp; drop · швидке редагування · копіювати день/тиждень · перегляд конфліктів</div>
+</div>
+
+<h2>2. Мобільний екран «Сьогодні»</h2>
+<div class="wrap">
+  <div class="screen mob">
+    <div class="bar"><div class="box">121 група ▾</div><div class="box">Тиждень 3 · непарний</div></div>
+    <b style="font-size:14px">Сьогодні, середа</b>
+    <div class="card"><b>1 пара · 08:20–09:40</b>Математичний аналіз<br>Іваненко І.І.<br>А.203</div>
+    <div class="card"><b>2 пара · 09:50–11:10</b>Програмування<br>А.305</div>
+    <div class="card"><b>3 пара · 11:30–12:50</b>Історія<br>Петренко П.П. · А.110</div>
+    <div class="bar"><div class="btn">Завтра</div><div class="btn">Тиждень</div></div>
+  </div>
+</div>
+
+<h2>3. Експорт в Excel</h2>
+<div class="screen desk">
+  <div class="box" style="width:60%;margin-bottom:10px">Пошук групи…</div>
+  <div class="bar"><div class="btn">Обрати всі</div><div class="box">Режим: Odd/Even шаблон ▾</div><div class="box">Період: 01.09 – 30.09</div></div>
+  <div class="row"><span class="cb on"></span> 121</div>
+  <div class="row"><span class="cb"></span> 124</div>
+  <div class="row"><span class="cb on"></span> 125</div>
+  <div class="row"><span class="cb"></span> КН-41</div>
+  <div class="box" style="margin:10px 0">Вибрано: 2 групи</div>
+  <div class="btn" style="display:inline-block">Експортувати (.xlsx)</div>
+  <div class="warn" style="margin-top:12px">Якщо занять немає: «Для вибраних груп немає занять для експорту.»</div>
+</div>
+</body>
+</html>
