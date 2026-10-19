@@ -43,5 +43,12 @@ services:
     volumes:
       - ./backend:/app
 
+  web:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+
 volumes:
   pgdata:
