@@ -2,7 +2,9 @@
 
 FastAPI + PostgreSQL + Redis. Реалізовано весь бек MVP-1…MVP-6: довідники,
 академічний календар, ядро розкладу, виявлення конфліктів з override та
-аудитом, Redis-кешування, Excel-експорт. Фронтенд — окремий етап.
+аудитом, Redis-кешування, Excel-експорт. Для фронтенду (`../frontend`) додано
+публічний роутер перегляду, сервіс представлення розкладу на дату та API
+точкових змін (заміна, перенесення, скасування).
 
 ## Структура
 
@@ -14,12 +16,14 @@ backend/
                  facilities, calendar, schedule, audit)
     schemas/     Pydantic-схеми запитів і відповідей
     services/    calendar (тижні+парність), conflicts, excel_export,
-                 cache (Redis), audit
-    api/         deps (get_current_user, require_permission) + роути
-    main.py      FastAPI-застосунок
-  alembic/       міграції (0001 auth+org, 0002 решта)
-  scripts/seed.py  права, 7 ролей, суперадміністратор
-  tests/         69 pytest-тестів на SQLite, без Docker
+                 cache (Redis), audit, schedule_view (день/тиждень на дату)
+    api/         deps (get_current_user, require_permission) + роути,
+                 зокрема public (читання без входу) та audit
+    main.py      FastAPI-застосунок + CORS
+  alembic/       міграції (0001 auth+org, 0002 решта, 0003 заміни й перенесення)
+  scripts/seed.py       права, 7 ролей, суперадміністратор
+  scripts/seed_demo.py  демонстраційні довідники, розклад і користувачі
+  tests/         100 pytest-тестів на SQLite, без Docker
 ```
 
 ## Запуск через Docker
@@ -31,10 +35,11 @@ cp backend/.env.example backend/.env
 cd backend
 python -m alembic upgrade head
 python -m scripts.seed
+python -m scripts.seed_demo        # демо-дані для фронтенду (необовʼязково)
 python -m uvicorn app.main:app --reload
 ```
 
-Документація API: http://localhost:8000/docs (34 ендпоінти). Повний стек разом
+Документація API: http://localhost:8000/docs (50 ендпоінтів). Повний стек разом
 з API в контейнері: `docker compose up -d` з кореня.
 
 ## Локальне середовище
@@ -42,7 +47,7 @@ python -m uvicorn app.main:app --reload
 ```bash
 python -m venv .venv
 .venv/Scripts/python.exe -m pip install -r requirements.txt   # Windows
-.venv/Scripts/python.exe -m pytest                            # 69 тестів, без Docker
+.venv/Scripts/python.exe -m pytest                            # 100 тестів, без Docker
 ```
 
 ## Основні групи ендпоінтів (усі під /api/v1)
@@ -56,8 +61,11 @@ python -m venv .venv
 | Дисципліни / типи занять | `/subjects`, `/lesson-types` | `subject.manage` |
 | Корпуси / аудиторії / пари | `/buildings`, `/rooms`, `/times` | `room.manage` |
 | Календар | `/academic-years`, `/semesters`, `/semesters/{id}/generate-weeks`, `/week-for-date`, `/exceptions` | `calendar.manage` |
-| Розклад | `POST /schedule`, `/schedule/group/{id}`, `/schedule/teacher/{id}`, `/schedule/room/{id}` | `schedule.create` / `schedule.delete` |
+| Розклад | `POST /schedule`, `PUT /schedule/{id}`, `/schedule/group/{id}`, `/schedule/teacher/{id}`, `/schedule/room/{id}` | `schedule.create` / `schedule.edit` / `schedule.delete` |
+| Точкові зміни | `POST /schedule/{id}/exceptions`, `DELETE /schedule/exceptions/{id}` | `schedule.move` / `schedule.cancel` / `schedule.edit` |
 | Експорт | `POST /export` (.xlsx) | `schedule.export` |
+| Журнал аудиту | `GET /audit` | `audit.view` |
+| Публічний перегляд | `/public/groups`, `/public/calendar`, `/public/schedule/{group\|teacher\|room}/{id}/{day\|week}` | — (лише читання) |
 
 ## Ключова логіка (DoD ТЗ)
 
@@ -73,6 +81,11 @@ python -m venv .venv
   freeze_panes, друк Landscape. Сервіс не залежить від HTTP чи ORM.
 - **Redis** (`services/cache.py`): кеш розкладу групи з інвалідацією при зміні
   заняття; якщо Redis недоступний — тихий fallback на БД.
+- **Перегляд на дату** (`services/schedule_view.py`): шаблон «день+пара+парність»
+  розгортається на конкретну дату з урахуванням календарних винятків і точкових
+  змін; повертає готові для показу назви, а не ідентифікатори.
+- **Публічний доступ**: роутер `/api/v1/public` лише читає і не вимагає входу;
+  вимикається прапорцем `PUBLIC_SCHEDULE_ENABLED=false`.
 
 ## Пастки цього середовища
 
