@@ -15,5 +15,18 @@ class Settings(BaseSettings):
     seed_admin_email: str = "admin@chnu.edu.ua"
     seed_admin_password: str = "admin12345"
 
+    # Опублікований розклад можна дивитися без входу: студент відкриває
+    # посилання й одразу бачить пари. Вимикається одним прапорцем, якщо
+    # університет вирішить закрити розклад за автентифікацією.
+    public_schedule_enabled: bool = True
+
+    # Джерела, яким дозволено звертатися до API з браузера: dev-сервер Vite,
+    # його preview і контейнер з Nginx.
+    cors_origins: str = "http://localhost:5173,http://localhost:4173,http://localhost:8080"
+
+    @property
+    def cors_origin_list(self) -> list[str]:
+        return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+
 
 settings = Settings()
