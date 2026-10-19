@@ -84,10 +84,6 @@ export function LessonForm({
   const [busy, setBusy] = useState(false)
   const conflictsRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    setForm((previous) => ({ ...previous, semester_id: semesterId }))
-  }, [semesterId])
-
   // Конфлікти зʼявляються внизу довгої форми — підводимо їх до очей.
   useEffect(() => {
     if (conflicts.length > 0) {

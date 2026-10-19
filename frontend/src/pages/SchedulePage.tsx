@@ -81,7 +81,7 @@ function storeTarget(kind: TargetKind, id: number): void {
 export function SchedulePage() {
   const [params, setParams] = useSearchParams()
 
-  const stored = useMemo(readStoredTarget, [])
+  const stored = useMemo(() => readStoredTarget(), [])
   const kind = (params.get('kind') as TargetKind | null) ?? stored?.kind ?? 'group'
   const targetId = Number(params.get('id') ?? 0) || null
   const date = params.get('date') ?? todayISO()
