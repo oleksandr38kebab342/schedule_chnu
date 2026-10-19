@@ -149,7 +149,12 @@ class ScheduleStream(Base):
 
 
 class ScheduleException(Base, TimestampMixin):
-    """Точкова зміна заняття на конкретну дату без зміни базового шаблону."""
+    """Точкова зміна заняття на конкретну дату без зміни базового шаблону.
+
+    `on_date` — дата, на якій діє виняток. Для MOVE з `new_date` заняття зникає
+    з `on_date` і зʼявляється на `new_date` (за потреби з іншою парою чи
+    аудиторією). REPLACE із `new_teacher_id` — заміна викладача.
+    """
 
     __tablename__ = "schedule_exceptions"
 
@@ -161,8 +166,12 @@ class ScheduleException(Base, TimestampMixin):
         Enum(ExceptionAction, name="exception_action"), nullable=False
     )
     on_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
+    new_date: Mapped[date | None] = mapped_column(Date, index=True)
     new_pair_time_id: Mapped[int | None] = mapped_column(ForeignKey("times.id", ondelete="SET NULL"))
     new_room_id: Mapped[int | None] = mapped_column(ForeignKey("rooms.id", ondelete="SET NULL"))
+    new_teacher_id: Mapped[int | None] = mapped_column(
+        ForeignKey("teachers.id", ondelete="SET NULL")
+    )
     reason: Mapped[str | None] = mapped_column(String(255))
     created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
 

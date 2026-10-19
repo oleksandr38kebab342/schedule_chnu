@@ -6,12 +6,14 @@ from app.api.deps import get_current_user, require_permission
 from app.core import permissions
 from app.core.database import get_db
 from app.models import (
+    ExceptionAction,
     Group,
     PairTime,
     Room,
     ScheduleConflict,
     ScheduleConflictOverride,
     ScheduleEntry,
+    ScheduleException,
     ScheduleGroup,
     ScheduleRoom,
     ScheduleStream,
@@ -27,13 +29,25 @@ from app.schemas.schedule import (
     ScheduleEntryCreate,
     ScheduleEntryCreateResult,
     ScheduleEntryRead,
+    ScheduleEntryUpdate,
+    ScheduleExceptionCreate,
+    ScheduleExceptionRead,
 )
 from app.services import audit, cache
 from app.services.conflicts import Conflict, detect_conflicts
 
 router = APIRouter(prefix="/schedule", tags=["schedule"])
 create_perm = require_permission(permissions.SCHEDULE_CREATE)
+edit_perm = require_permission(permissions.SCHEDULE_EDIT)
 delete_perm = require_permission(permissions.SCHEDULE_DELETE)
+
+# Яке право потрібне для конкретного виду точкової зміни заняття.
+_EXCEPTION_PERMISSION = {
+    ExceptionAction.ADD: permissions.SCHEDULE_CREATE,
+    ExceptionAction.MOVE: permissions.SCHEDULE_MOVE,
+    ExceptionAction.CANCEL: permissions.SCHEDULE_CANCEL,
+    ExceptionAction.REPLACE: permissions.SCHEDULE_EDIT,
+}
 
 
 def _to_read(entry: ScheduleEntry) -> ScheduleEntryRead:
@@ -87,6 +101,67 @@ def _validate_refs(db: Session, payload: ScheduleEntryCreate) -> None:
             )
 
 
+def _record_conflicts(
+    db: Session,
+    entry: ScheduleEntry,
+    conflicts: list[Conflict],
+    reason: str,
+    user: User,
+) -> None:
+    """Фіксує конфлікти та причину свідомого збереження (ТЗ, розділ 42)."""
+    for c in conflicts:
+        record = ScheduleConflict(
+            entry_id=entry.id,
+            other_entry_id=c.other_entry_id,
+            kind=c.kind,
+            severity=c.severity,
+            resource_id=c.resource_id,
+            details=c.details,
+        )
+        db.add(record)
+        db.flush()
+        if c.severity.value == "ERROR":
+            db.add(
+                ScheduleConflictOverride(
+                    conflict_id=record.id, reason=reason, created_by=user.id
+                )
+            )
+    audit.record(
+        db,
+        user_id=user.id,
+        action="schedule.override_conflict",
+        entity_type="schedule_entry",
+        entity_id=entry.id,
+        new_value={"conflicts": len(conflicts)},
+        reason=reason,
+    )
+
+
+def _assign_links(db: Session, entry: ScheduleEntry, payload: ScheduleEntryCreate) -> None:
+    """Перезаписує звʼязки заняття (дублікати в запиті ігноруються).
+
+    Старі звʼязки прибираємо окремим flush: інакше SQLAlchemy може вставити
+    новий рядок раніше, ніж видалить попередній, і впертися в UNIQUE-обмеження
+    при редагуванні заняття на ті самі групи.
+    """
+    if entry.id is not None:
+        for collection in (
+            entry.teachers,
+            entry.rooms,
+            entry.groups,
+            entry.subgroups,
+            entry.streams,
+        ):
+            collection.clear()
+        db.flush()
+
+    entry.teachers = [ScheduleTeacher(teacher_id=i) for i in dict.fromkeys(payload.teacher_ids)]
+    entry.rooms = [ScheduleRoom(room_id=i) for i in dict.fromkeys(payload.room_ids)]
+    entry.groups = [ScheduleGroup(group_id=i) for i in dict.fromkeys(payload.group_ids)]
+    entry.subgroups = [ScheduleSubgroup(subgroup_id=i) for i in dict.fromkeys(payload.subgroup_ids)]
+    entry.streams = [ScheduleStream(stream_id=i) for i in dict.fromkeys(payload.stream_ids)]
+
+
 @router.post("", response_model=ScheduleEntryCreateResult)
 def create_entry(
     payload: ScheduleEntryCreate,
@@ -106,11 +181,7 @@ def create_entry(
         created_by=user.id,
         updated_by=user.id,
     )
-    entry.teachers = [ScheduleTeacher(teacher_id=i) for i in dict.fromkeys(payload.teacher_ids)]
-    entry.rooms = [ScheduleRoom(room_id=i) for i in dict.fromkeys(payload.room_ids)]
-    entry.groups = [ScheduleGroup(group_id=i) for i in dict.fromkeys(payload.group_ids)]
-    entry.subgroups = [ScheduleSubgroup(subgroup_id=i) for i in dict.fromkeys(payload.subgroup_ids)]
-    entry.streams = [ScheduleStream(stream_id=i) for i in dict.fromkeys(payload.stream_ids)]
+    _assign_links(db, entry, payload)
 
     # Додаємо в сесію без commit, щоб детектор бачив звʼязки, але не фіксуємо
     # до перевірки конфліктів.
@@ -136,34 +207,7 @@ def create_entry(
                 detail="Немає права зберігати попри конфлікт (schedule.override_conflict)",
             )
         overridden = True
-        for c in conflicts:
-            record = ScheduleConflict(
-                entry_id=entry.id,
-                other_entry_id=c.other_entry_id,
-                kind=c.kind,
-                severity=c.severity,
-                resource_id=c.resource_id,
-                details=c.details,
-            )
-            db.add(record)
-            db.flush()
-            if c.severity.value == "ERROR":
-                db.add(
-                    ScheduleConflictOverride(
-                        conflict_id=record.id,
-                        reason=payload.override_reason,
-                        created_by=user.id,
-                    )
-                )
-        audit.record(
-            db,
-            user_id=user.id,
-            action="schedule.override_conflict",
-            entity_type="schedule_entry",
-            entity_id=entry.id,
-            new_value={"conflicts": len(conflicts)},
-            reason=payload.override_reason,
-        )
+        _record_conflicts(db, entry, conflicts, payload.override_reason, user)
 
     audit.record(
         db,
@@ -261,5 +305,188 @@ def delete_entry(
         entity_id=entry_id,
     )
     db.delete(entry)
+    db.commit()
+    cache.invalidate(pairs)
+
+
+@router.put("/{entry_id}", response_model=ScheduleEntryCreateResult)
+def update_entry(
+    entry_id: int,
+    payload: ScheduleEntryUpdate,
+    db: Session = Depends(get_db),
+    user: User = Depends(edit_perm),
+) -> ScheduleEntryCreateResult:
+    """Повна заміна заняття з тією самою перевіркою конфліктів, що й створення."""
+    entry = db.get(ScheduleEntry, entry_id)
+    if entry is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Заняття не знайдено")
+    _validate_refs(db, payload)
+
+    before = _to_read(entry)
+    stale_pairs = list(_invalidation_pairs(entry))
+
+    entry.semester_id = payload.semester_id
+    entry.subject_id = payload.subject_id
+    entry.lesson_type_id = payload.lesson_type_id
+    entry.pair_time_id = payload.pair_time_id
+    entry.day_of_week = payload.day_of_week
+    entry.week_parity = payload.week_parity
+    entry.note = payload.note
+    entry.updated_by = user.id
+    _assign_links(db, entry, payload)
+    db.flush()
+
+    conflicts = detect_conflicts(db, entry)
+    blocking = [c for c in conflicts if c.severity.value == "ERROR"]
+
+    if blocking and not payload.override_reason:
+        # Правку не застосовуємо: заняття лишається таким, яким було.
+        db.rollback()
+        return ScheduleEntryCreateResult(
+            entry=None, conflicts=[_conflict_read(c) for c in conflicts], saved=False
+        )
+
+    overridden = False
+    if blocking and payload.override_reason:
+        if permissions.SCHEDULE_OVERRIDE_CONFLICT not in user.permission_codes:
+            db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Немає права зберігати попри конфлікт (schedule.override_conflict)",
+            )
+        overridden = True
+        _record_conflicts(db, entry, conflicts, payload.override_reason, user)
+
+    audit.record(
+        db,
+        user_id=user.id,
+        action="schedule.edit",
+        entity_type="schedule_entry",
+        entity_id=entry.id,
+        old_value=before.model_dump(mode="json"),
+        new_value=payload.model_dump(mode="json", exclude={"override_reason"}),
+        reason=payload.override_reason,
+    )
+    db.commit()
+    db.refresh(entry)
+    cache.invalidate(stale_pairs)
+    cache.invalidate(_invalidation_pairs(entry))
+
+    return ScheduleEntryCreateResult(
+        entry=_to_read(entry),
+        conflicts=[_conflict_read(c) for c in conflicts],
+        saved=True,
+        overridden=overridden,
+    )
+
+
+@router.get("/{entry_id}", response_model=ScheduleEntryRead)
+def get_entry(
+    entry_id: int, db: Session = Depends(get_db), _=Depends(get_current_user)
+) -> ScheduleEntryRead:
+    entry = db.get(ScheduleEntry, entry_id)
+    if entry is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Заняття не знайдено")
+    return _to_read(entry)
+
+
+@router.get("/{entry_id}/exceptions", response_model=list[ScheduleExceptionRead])
+def list_exceptions(
+    entry_id: int, db: Session = Depends(get_db), _=Depends(get_current_user)
+) -> list[ScheduleException]:
+    if db.get(ScheduleEntry, entry_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Заняття не знайдено")
+    return list(
+        db.scalars(
+            select(ScheduleException)
+            .where(ScheduleException.entry_id == entry_id)
+            .order_by(ScheduleException.on_date)
+        )
+    )
+
+
+@router.post(
+    "/{entry_id}/exceptions",
+    response_model=ScheduleExceptionRead,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_exception(
+    entry_id: int,
+    payload: ScheduleExceptionCreate,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> ScheduleException:
+    """Скасування, перенесення, заміна або додаткове заняття на конкретну дату.
+
+    Право залежить від дії: скасування — schedule.cancel, перенесення —
+    schedule.move, заміна — schedule.edit, додаткове заняття — schedule.create.
+    """
+    entry = db.get(ScheduleEntry, entry_id)
+    if entry is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Заняття не знайдено")
+
+    needed = _EXCEPTION_PERMISSION[payload.action]
+    if needed not in user.permission_codes:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail=f"Недостатньо прав: потрібне {needed}"
+        )
+
+    for model, obj_id, label in (
+        (PairTime, payload.new_pair_time_id, "Пара"),
+        (Room, payload.new_room_id, "Аудиторія"),
+        (Teacher, payload.new_teacher_id, "Викладач"),
+    ):
+        if obj_id is not None and db.get(model, obj_id) is None:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail=f"{label} {obj_id} не існує",
+            )
+
+    exception = ScheduleException(
+        entry_id=entry_id,
+        action=payload.action,
+        on_date=payload.on_date,
+        new_date=payload.new_date,
+        new_pair_time_id=payload.new_pair_time_id,
+        new_room_id=payload.new_room_id,
+        new_teacher_id=payload.new_teacher_id,
+        reason=payload.reason,
+        created_by=user.id,
+    )
+    db.add(exception)
+    audit.record(
+        db,
+        user_id=user.id,
+        action=f"schedule.exception.{payload.action.value.lower()}",
+        entity_type="schedule_entry",
+        entity_id=entry_id,
+        new_value=payload.model_dump(mode="json"),
+        reason=payload.reason,
+    )
+    db.commit()
+    db.refresh(exception)
+    cache.invalidate(_invalidation_pairs(entry))
+    return exception
+
+
+@router.delete("/exceptions/{exception_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_exception(
+    exception_id: int, db: Session = Depends(get_db), user: User = Depends(edit_perm)
+) -> None:
+    """Скасовує точкову зміну — заняття повертається до базового шаблону."""
+    exception = db.get(ScheduleException, exception_id)
+    if exception is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Зміну не знайдено")
+    entry = db.get(ScheduleEntry, exception.entry_id)
+    pairs = list(_invalidation_pairs(entry)) if entry else []
+    audit.record(
+        db,
+        user_id=user.id,
+        action="schedule.exception.delete",
+        entity_type="schedule_entry",
+        entity_id=exception.entry_id,
+        old_value={"action": exception.action.value, "on_date": exception.on_date.isoformat()},
+    )
+    db.delete(exception)
     db.commit()
     cache.invalidate(pairs)
