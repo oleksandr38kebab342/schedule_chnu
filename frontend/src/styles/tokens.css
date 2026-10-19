@@ -1,0 +1,104 @@
+/* Дизайн-токени. Світла тема — як на референсному макеті; темна вмикається
+   системним налаштуванням. Усі кольори оголошені тут, компоненти беруть лише
+   змінні, щоб палітру можна було змінити в одному місці. */
+
+:root {
+  color-scheme: light;
+
+  --bg: #f1f3f5;
+  --surface: #ffffff;
+  --surface-2: #f8f9fa;
+  --surface-3: #eef0f2;
+  --border: #e4e7eb;
+  --border-strong: #d4d8de;
+
+  --text: #0f1419;
+  --text-soft: #5b6471;
+  --text-faint: #8b94a0;
+  --inverse: #ffffff;
+
+  --ink: #10151c; /* активний день, темні кнопки */
+  --ink-soft: #1d2530;
+
+  --accent: #1f6feb;
+  --accent-soft: #e8f0fe;
+
+  --success: #17a673;
+  --success-soft: #e3f7ef;
+  --warning: #d98317;
+  --warning-soft: #fdf1e0;
+  --danger: #d6455d;
+  --danger-soft: #fdeaee;
+  --violet: #7a5cd6;
+  --violet-soft: #efeafc;
+
+  /* Типи занять: ключ = код типу з довідника lesson_types. */
+  --type-lec: #2563eb;
+  --type-lec-soft: #e7efff;
+  --type-lab: #d98317;
+  --type-lab-soft: #fdf1e0;
+  --type-pract: #17a673;
+  --type-pract-soft: #e3f7ef;
+  --type-elect: #7a5cd6;
+  --type-elect-soft: #efeafc;
+  --type-other: #5b6471;
+  --type-other-soft: #eef0f2;
+
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --shadow-sm: 0 1px 2px rgba(15, 20, 25, 0.06);
+  --shadow: 0 6px 20px rgba(15, 20, 25, 0.08);
+
+  --font-body: 'Manrope', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+
+  --page: 1280px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface-2: #1b2129;
+    --surface-3: #222831;
+    --border: #2a313b;
+    --border-strong: #3a424e;
+
+    --text: #e9edf2;
+    --text-soft: #9aa5b1;
+    --text-faint: #6e7986;
+    --inverse: #0d1117;
+
+    --ink: #e9edf2;
+    --ink-soft: #cdd5de;
+
+    --accent: #58a6ff;
+    --accent-soft: #11243d;
+
+    --success: #3fb950;
+    --success-soft: #0f2a1b;
+    --warning: #e3a008;
+    --warning-soft: #2e2208;
+    --danger: #f1707f;
+    --danger-soft: #331219;
+    --violet: #a78bfa;
+    --violet-soft: #221a3d;
+
+    --type-lec: #58a6ff;
+    --type-lec-soft: #11243d;
+    --type-lab: #e3a008;
+    --type-lab-soft: #2e2208;
+    --type-pract: #3fb950;
+    --type-pract-soft: #0f2a1b;
+    --type-elect: #a78bfa;
+    --type-elect-soft: #221a3d;
+    --type-other: #9aa5b1;
+    --type-other-soft: #222831;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+  }
+}
